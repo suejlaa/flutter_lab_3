@@ -2,8 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/category.dart';
 import '../services/meal_service.dart';
-import 'meals_by_category_screen.dart';
-import 'random_meal_screen.dart';
+import '../services/favorite_service.dart';
+import 'favorites_screen.dart';  // Navigate to Favorites screen
+import 'meals_by_category_screen.dart';  // Navigate to Meals by Category screen
 
 class CategoriesScreen extends StatefulWidget {
   @override
@@ -56,9 +57,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         title: Text("Meal Categories"),
         actions: [
           IconButton(
-            icon: Icon(Icons.shuffle),
+            icon: Icon(Icons.favorite),
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => RandomMealScreen()));
+              Navigator.push(context, MaterialPageRoute(builder: (_) => FavoritesScreen()));  // Navigate to Favorites screen
             },
           ),
         ],

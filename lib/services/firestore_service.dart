@@ -4,31 +4,30 @@ import '../models/meal.dart';
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  // Add a favorite meal
+  // Add a meal to the user's favorites
   Future<void> addFavoriteMeal(String userId, Meal meal) async {
     await _db.collection('favorites').doc(userId).collection('meals').doc(meal.id).set({
-      'id': meal.id,
+      'mealId': meal.id,
       'name': meal.name,
       'thumbnail': meal.thumbnail,
-      'isFavorite': true,
     });
   }
 
-  // Remove a favorite meal
+  // Remove a meal from the user's favorites
   Future<void> removeFavoriteMeal(String userId, Meal meal) async {
     await _db.collection('favorites').doc(userId).collection('meals').doc(meal.id).delete();
   }
 
-  // Fetch all favorite meals
+  // Get favorite meals for the user (optional, if you want to load favorites)
   Future<List<Meal>> getFavoriteMeals(String userId) async {
-    QuerySnapshot snapshot = await _db.collection('favorites').doc(userId).collection('meals').get();
-    return snapshot.docs.map((doc) {
-      return Meal(
-        id: doc['id'],
-        name: doc['name'],
-        thumbnail: doc['thumbnail'],
-        isFavorite: doc['isFavorite'],
-      );
-    }).toList();
+    final snapshot = await _db.collection('favorites').doc(userId).collection('meals').get();
+    return snapshot.docs
+        .map((doc) => Meal(
+      id: doc.id,
+      name: doc['name'],
+      thumbnail: doc['thumbnail'],
+      isFavorite: true, // Since it's a favorite, we mark it as true
+    ))
+        .toList();
   }
 }

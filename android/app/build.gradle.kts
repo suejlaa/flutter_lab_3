@@ -16,6 +16,8 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        // FIX 1: Enable core library desugaring
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -44,4 +46,13 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // FIX 2: Add the desugaring library dependency
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+
+    // You may have other dependencies here like:
+    // implementation(project(":flutter"))
+    // implementation("androidx.core:core-ktx:1.9.0")
 }

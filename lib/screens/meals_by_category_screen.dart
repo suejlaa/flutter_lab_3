@@ -2,7 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/meal.dart';
 import '../services/meal_service.dart';
-import '../services/firestore_service.dart'; // New service for Firebase
+import '../services/favorite_service.dart';
+import 'meal_detail_screen.dart';
 
 class MealsByCategoryScreen extends StatefulWidget {
   final String category;
@@ -10,12 +11,14 @@ class MealsByCategoryScreen extends StatefulWidget {
   MealsByCategoryScreen({required this.category});
 
   @override
-  _MealsByCategoryScreenState createState() => _MealsByCategoryScreenState();
+  State<StatefulWidget> createState() {
+    return _MealsByCategoryScreenState();
+  }
 }
 
 class _MealsByCategoryScreenState extends State<MealsByCategoryScreen> {
   MealService api = MealService();
-  FirestoreService firestoreService = FirestoreService();  // Firestore service instance
+  FavoriteService favoriteService = FavoriteService();  // Initialize FavoriteService
   List<Meal> meals = [];
   List<Meal> filtered = [];
   Timer? debounce;
@@ -54,23 +57,6 @@ class _MealsByCategoryScreenState extends State<MealsByCategoryScreen> {
     });
   }
 
-  // Function to handle adding/removing from favorites
-  void toggleFavorite(Meal meal) async {
-    // Check if the meal is already marked as a favorite
-    if (meal.isFavorite) {
-      // Remove from Firebase favorites
-      await firestoreService.removeFavoriteMeal('userId', meal);  // Replace 'userId' with actual user ID
-    } else {
-      // Add to Firebase favorites
-      await firestoreService.addFavoriteMeal('userId', meal);  // Replace 'userId' with actual user ID
-    }
-
-    // Toggle the favorite status
-    setState(() {
-      meal.isFavorite = !meal.isFavorite;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,10 +86,13 @@ class _MealsByCategoryScreenState extends State<MealsByCategoryScreen> {
                 mainAxisSpacing: 12,
               ),
               itemBuilder: (context, i) {
-                final meal = filtered[i];
+                final m = filtered[i];
                 return GestureDetector(
                   onTap: () {
-                    // Handle navigation to meal details screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => MealDetailScreen(id: m.id)),
+                    );
                   },
                   child: Card(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -112,40 +101,36 @@ class _MealsByCategoryScreenState extends State<MealsByCategoryScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Stack(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-                              child: Image.network(
-                                meal.thumbnail,
-                                height: 160,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            Positioned(
-                              right: 8,
-                              top: 8,
-                              child: IconButton(
-                                icon: Icon(
-                                  meal.isFavorite ? Icons.favorite : Icons.favorite_border,
-                                  color: meal.isFavorite ? Colors.red : Colors.white,
-                                ),
-                                onPressed: () => toggleFavorite(meal),
-                              ),
-                            ),
-                          ],
+                        ClipRRect(
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                          child: Image.network(
+                            m.thumbnail,
+                            height: 160,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                         Container(
                           height: 28,
                           padding: EdgeInsets.symmetric(horizontal: 6),
                           alignment: Alignment.center,
                           child: Text(
-                            meal.name,
+                            m.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
                             style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                           ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            favoriteService.isFavorite(m.id) ? Icons.favorite : Icons.favorite_border,
+                            color: Colors.red,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              favoriteService.toggleFavorite(m);
+                            });
+                          },
                         ),
                       ],
                     ),

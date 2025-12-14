@@ -1,42 +1,28 @@
 import 'package:flutter/material.dart';
-import '../services/firestore_service.dart';
-import '../models/meal.dart';
+import '../models/favorite_meal.dart';
+import '../services/favorite_service.dart';
 
-class FavoriteMealsScreen extends StatefulWidget {
-  final String userId;
-
-  FavoriteMealsScreen({required this.userId});
-
-  @override
-  _FavoriteMealsScreenState createState() => _FavoriteMealsScreenState();
-}
-
-class _FavoriteMealsScreenState extends State<FavoriteMealsScreen> {
-  List<Meal> favoriteMeals = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadFavoriteMeals();
-  }
-
-  _loadFavoriteMeals() async {
-    FirestoreService firestoreService = FirestoreService();
-    favoriteMeals = await firestoreService.getFavoriteMeals(widget.userId);
-    setState(() {});
-  }
+class FavoritesScreen extends StatelessWidget {
+  final FavoriteService favoriteService = FavoriteService();  // Initialize FavoriteService
 
   @override
   Widget build(BuildContext context) {
+    List<FavoriteMeal> favorites = favoriteService.getFavorites();
+
     return Scaffold(
-      appBar: AppBar(title: Text("Favorite Meals")),
-      body: ListView.builder(
-        itemCount: favoriteMeals.length,
-        itemBuilder: (context, index) {
-          final meal = favoriteMeals[index];
+      appBar: AppBar(title: Text("Favorites")),
+      body: favorites.isEmpty
+          ? Center(child: Text("No favorite meals yet"))
+          : ListView.builder(
+        itemCount: favorites.length,
+        itemBuilder: (context, i) {
+          final meal = favorites[i];
           return ListTile(
+            leading: Image.network(meal.thumbnail, width: 50, height: 50),
             title: Text(meal.name),
-            leading: Image.network(meal.thumbnail),
+            onTap: () {
+              // Navigate to meal detail
+            },
           );
         },
       ),
